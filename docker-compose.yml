@@ -1,0 +1,59 @@
+version: '3.7'
+
+services:
+
+  # postgres Service
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_DB: ${MYSQL_DATABASE}
+      POSTGRES_USER: ${MYSQL_USER}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  # drupal Service
+  # Drupal Service
+  drupal:
+    image: drupal:10-apache
+    container_name: drupal
+    volumes:
+      - ./drupal/modules:/var/www/html/modules
+      - ./drupal/profiles:/var/www/html/profiles
+      - ./drupal/themes:/var/www/html/themes
+      - ./drupal/sites:/var/www/html/sites
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      DRUPAL_DB_URL: postgres://${MYSQL_USER}:${MYSQL_PASSWORD}@postgres:5432/${MYSQL_DATABASE}
+
+  # React App Service
+  react:
+    image: node:16
+    container_name: react_app
+    working_dir: /app
+    volumes:
+      - ./react:/app
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "if [ ! -d /app/myapp ]; then
+               npx create-react-app myapp;
+             fi && 
+             cd myapp && npm start"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  drupal_modules:
+  drupal_profiles:
+  drupal_themes:
+  drupal_sites:
+  react:
