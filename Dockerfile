@@ -1,22 +1,33 @@
-# Use the official Docker Library Drupal image
-FROM drupal:10
-# It contains Apache - the web server - and PHP.
-# Both Apache and PHP are already setup for Drupal sites.
+FROM php:8.2-apache-buster
 
-# Download and install needed CLI tools
+# Instalar las extensiones necesarias para Drupal
+
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 RUN apt-get update && apt-get install -y \
-  curl \
-  git \
-  nano \
-  wget
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
+        libwebp-dev \
+        libmcrypt-dev \
+        libzip-dev \
+        mariadb-client \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install pdo pdo_mysql zip
 
-# Download and install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --2 --install-dir=/usr/local/bin --filename=composer
+# Habilitar mod_rewrite para Apache
+RUN a2enmod rewrite
 
-# Copy custom PHP settings for project
-COPY drupal.ini /usr/local/etc/php/conf.d/drupal.ini
+# Configurar la raíz del documento
+ENV APACHE_DOCUMENT_ROOT /var/www/html/web
 
-# Remove the provided Drupal files
-RUN rm -rf /opt/drupal/web
+# Copiar el código fuente de Drupal
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+WORKDIR /var/www/html
+RUN composer create-project drupal/recommended-project:10.2.6 .
 
-WORKDIR /opt/drupal
+# Asignar permisos adecuados
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html
+
+EXPOSE 80

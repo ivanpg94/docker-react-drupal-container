@@ -7,32 +7,28 @@ services:
     image: postgres:16
     container_name: postgres
     environment:
-      POSTGRES_PASSWORD: ${MYSQL_PASSWORD}
-      POSTGRES_DB: ${MYSQL_DATABASE}
-      POSTGRES_USER: ${MYSQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     restart: unless-stopped
 
-  # drupal Service
   # Drupal Service
   drupal:
-    image: drupal:10-apache
+    build: .
     container_name: drupal
     volumes:
-      - ./drupal/modules:/var/www/html/modules
-      - ./drupal/profiles:/var/www/html/profiles
-      - ./drupal/themes:/var/www/html/themes
-      - ./drupal/sites:/var/www/html/sites
+      - ./drupal:/var/www/html
     ports:
       - "80:80"
     restart: unless-stopped
     depends_on:
       - postgres
     environment:
-      DRUPAL_DB_URL: postgres://${MYSQL_USER}:${MYSQL_PASSWORD}@postgres:5432/${MYSQL_DATABASE}
+      DRUPAL_DB_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DATABASE}
 
   # React App Service
   react:
