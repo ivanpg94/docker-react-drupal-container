@@ -286,7 +286,7 @@ $databases = [];
  *   $settings['hash_salt'] = file_get_contents('/home/example/salt.txt');
  * @endcode
  */
-$settings['hash_salt'] = '';
+$settings['hash_salt'] = 'PUNSj3hnICpXGp00CwtNXVqizKdGV7474O-VE8Eky-WFNxyh3jjg0rUGdCCWdhVQuLI_BwotzA';
 
 /**
  * Deployment identifier.
@@ -624,7 +624,7 @@ $settings['update_free_access'] = FALSE;
  *
  * @see \Drupal\Component\FileSystem\FileSystem::getOsTemporaryDirectory()
  */
-# $settings['file_temp_path'] = '/tmp';
+ $settings['file_temp_path'] = '/tmp';
 
 /**
  * Session write interval:
@@ -881,3 +881,17 @@ $settings['migrate_node_migrate_type_classic'] = FALSE;
 # if (file_exists($app_root . '/' . $site_path . '/settings.local.php')) {
 #   include $app_root . '/' . $site_path . '/settings.local.php';
 # }
+
+$databases['default']['default'] = array (
+  'database' => 'drupal_db',
+  'username' => 'drupal_user',
+  'password' => 'drupal_pass',
+  'prefix' => '',
+  'host' => 'postgres',
+  'port' => '5432',
+  'driver' => 'pgsql',
+  'namespace' => 'Drupal\\pgsql\\Driver\\Database\\pgsql',
+  'autoload' => 'core/modules/pgsql/src/Driver/Database/pgsql/',
+);
+$settings['config_sync_directory'] = 'config/sync';
+$config['system.logging']['error_level'] = 'verbose';
