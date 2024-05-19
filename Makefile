@@ -3,35 +3,48 @@ export
 
 .PHONY: install up down add-hosts remove-hosts
 
+# start a project
 install:
 	docker-compose up -d --build
 	make add-hosts
 
+# Destroy container and volumes
+unistall:
+	docker-compose down --remove-orphans --volumes
+
+# Up containers
 up:
 	@echo "Iniciando contenedores..."
 	docker-compose up -d
 	make add-hosts
-	sudo chown -R 1000:1000 ./react
-    sudo chown -R 1000:1000 ./drupal
 
+# Down containers
 down:
 	@echo "Apagando contenedores..."
 	docker-compose down
 	make remove-hosts
 
+# Open containers
+shell:
+	docker exec -it ${DRUPAL_CONTAINER_NAME} bash
+
+shell-psg:
+	docker exec -it ${POSTGRES_CONTAINER_NAME} bash
+
+shell-react:
+	docker exec -it ${REACT_CONTAINER_NAME} bash
+
+
+# Helpers
 add-hosts:
 	@echo "Adding hosts entries..."
-	@grep -q "$(DRUPAL_HOST)" /etc/hosts || (echo "127.0.0.1 $(DRUPAL_HOST)" | sudo tee -a /etc/hosts && echo "Added $(DRUPAL_HOST) to /etc/hosts")
-	@grep -q "$(REACT_HOST)" /etc/hosts || (echo "127.0.0.1 $(REACT_HOST)" | sudo tee -a /etc/hosts && echo "Added $(REACT_HOST) to /etc/hosts")
-	@grep -q "$(PHPMYADMIN_HOST)" /etc/hosts || (echo "127.0.0.1 $(PHPMYADMIN_HOST)" | sudo tee -a /etc/hosts && echo "Added $(PHPMYADMIN_HOST) to /etc/hosts")
+	@grep -q "${DRUPAL_HOST}" /etc/hosts || (echo "127.0.0.1 ${DRUPAL_HOST}" | sudo tee -a /etc/hosts && echo "Added ${DRUPAL_HOST} to /etc/hosts")
+	@grep -q "${REACT_HOST}" /etc/hosts || (echo "127.0.0.1 ${REACT_HOST}" | sudo tee -a /etc/hosts && echo "Added ${REACT_HOST} to /etc/hosts")
 	@echo "Current URLs:"
-	@echo "Drupal URL: $(DRUPAL_HOST)"
-	@echo "React URL: $(REACT_HOST)"
-	@echo "phpMyAdmin URL: $(PHPMYADMIN_HOST)"
+	@echo "Drupal URL: ${DRUPAL_HOST}"
+	@echo "React URL: ${REACT_HOST}"
 
-# Helper function to remove host entries
 remove-hosts:
 	@echo "Removing hosts entries..."
-	@sudo sed -i "\#$(DRUPAL_HOST)#d" /etc/hosts
-	@sudo sed -i "\#$(REACT_HOST)#d" /etc/hosts
-	@sudo sed -i "\#$(PHPMYADMIN_HOST)#d" /etc/hosts
+	@sudo sed -i "\#${DRUPAL_HOST}#d" /etc/hosts
+	@sudo sed -i "\#${REACT_HOST}#d" /etc/hosts
